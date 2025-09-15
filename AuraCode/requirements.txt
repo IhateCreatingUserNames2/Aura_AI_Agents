@@ -1,0 +1,20 @@
+google-adk
+fastapi~=0.115.9
+uvicorn[standard]~=0.34.2
+pydantic~=2.11.5
+sentence-transformers # For MemoryBlossom embeddings
+numpy~=2.3.1
+scikit-learn~=1.6.1
+# Add any other specific model libraries if not covered by ADK/LiteLLM or SentenceTransformers
+# e.g., openai, anthropic if using LiteLLM and want to be explicit
+litellm~=1.71.2
+python-dotenv~=1.1.0
+jwt~=1.4.0
+bcrypt~=4.3.0
+SQLAlchemy~=2.0.41
+starlette~=0.45.3
+asyncio~=3.4.3
+PyJWT~=2.10.1
+langgraph~=0.4.7
+requests~=2.32.3
+langchain~=0.2.17

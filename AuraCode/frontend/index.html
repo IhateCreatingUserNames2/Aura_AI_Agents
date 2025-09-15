@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura | Biographical Agents By Cognai</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                    <path d="M8 12L16 8L24 12L16 24L8 12Z" fill="white" fill-opacity="0.9"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#667eea"/>
+                            <stop offset="100%" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">Aura</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="sidebar-content">
+            <a href="https://cognai.space/upload" class="create-btn" id="external-upload-btn" target="_blank" rel="noopener noreferrer">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0v8m0 0v8m0-8H0m8 0h8" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <span>Create Agent</span>
+</a>
+
+                 <nav class="sidebar-nav">
+                <a href="#" class="nav-item" id="discover-tab">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Discover
+                </a>
+                <a href="#" class="nav-item" id="my-agents-tab">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .5-.5h1zM2.5 9.5A.5.5 0 0 1 3 10v2a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1zm9-4A.5.5 0 0 1 12 6v6a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .5-.5h1zM9.5 9.5A.5.5 0 0 1 10 10v2a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1zm5-4A.5.5 0 0 1 15 6v6a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .5-.5h1z"/>
+                        <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"/>
+                    </svg>
+                    My Agents
+                </a>
+            </nav>
+
+                 <div class="agents-section" id="agents-section">
+                    <div class="section-header">
+                        <h3>Recent Chats</h3>
+                        <span class="agent-count" id="agent-count">0</span>
+                    </div>
+                    <div class="agents-list" id="agents-list">
+                        <!-- Chat sessions will be populated here -->
+                    </div>
+                </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile" id="user-profile">
+                <div class="user-avatar">
+                    <span id="user-initial">G</span>
+                </div>
+                <div class="user-info">
+                    <span class="username" id="username-display">Guest</span>
+                    <button class="user-menu-btn" id="user-menu-btn">⋯</button>
+                </div>
+            </div>
+            <div class="user-menu" id="user-menu" style="display: none;">
+                <a href="#" id="profile-btn">Profile</a>
+                <a href="#" id="settings-btn">Settings</a>
+                <a href="#" id="logout-btn" style="display: none;">Logout</a>
+                <a href="#" id="login-btn">Login</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Welcome/Discover View -->
+        <div class="view" id="discover-view">
+            <div class="discover-header">
+                <h1>What would you like to create today?</h1>
+                <p>Chat with Biographical AI Agents with narrative contextual Memories.</p>
+            </div>
+
+            <div class="featured-agents" id="featured-agents">
+                <h2>🏪 Agent Marketplace</h2>
+                <div class="featured-grid" id="featured-grid">
+                    <!-- Featured agents will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- My Agents View (MOVED HERE) -->
+        <div class="view" id="my-agents-view" style="display: none;">
+            <div class="discover-header">
+                <h1>My Agents</h1>
+                <p>Manage your private agents and public marketplace templates.</p>
+            </div>
+                <div class="my-agents-grid" id="my-agents-grid">
+                    <div class="my-agent-card">
+                        <div class="my-agent-card__header">
+                            <div class="agent-avatar">
+                                <!-- Em um caso real, a tag <img> seria usada aqui.
+                                     A inicial é um fallback. -->
+                                <img src="https://picsum.photos/id/1025/100/100" alt="Socrates Avatar" style="width:100%; height:100%; object-fit: cover; border-radius: 50%;">
+                            </div>
+                            <div class="my-agent-card__info">
+                                <h3>Socrates</h3>
+                                <p>An unexamined life is not worth living.</p>
+                            </div>
+                        </div>
+
+                        <div class="my-agent-card__details">
+                            <div class="detail-item">
+                                <span class="label">Visibility</span>
+                                <span class="value"><span class="agent-tag public">Public</span></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Model</span>
+                                <span class="value model-value">Cognai-XL</span>
+                            </div>
+                             <div class="detail-item">
+                                <span class="label">System</span>
+                                <span class="value"><span class="system-badge ceaf">CEAF</span></span>
+                            </div>
+                        </div>
+
+                        <div class="my-agent-card__stats">
+                            <div class="stat-item">
+                                <span class="value">1,240</span>
+                                <span class="label">Interactions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="value">88</span>
+                                <span class="label">Memories</span>
+                            </div>
+                             <div class="stat-item">
+                                <span class="value">42</span>
+                                <span class="label">Clones</span>
+                            </div>
+                        </div>
+
+                        <div class="my-agent-card__actions">
+                            <button class="btn-action">💬 Chat</button>
+                            <button class="btn-action">⚙️ Manage</button>
+                            <button class="btn-action">📈 Memory</button>
+                            <button class="btn-action btn-danger">🗑️ Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="my-agent-card">
+                        <div class="my-agent-card__header">
+                            <div class="agent-avatar"><span>P</span></div>
+                            <div class="my-agent-card__info">
+                                <h3>Project Chronos</h3>
+                                <p>Your personal time management assistant.</p>
+                            </div>
+                        </div>
+
+                         <div class="my-agent-card__details">
+                            <div class="detail-item">
+                                <span class="label">Visibility</span>
+                                <span class="value"><span class="agent-tag private">Private</span></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Model</span>
+                                <span class="value model-value">GPT-4o</span>
+                            </div>
+                             <div class="detail-item">
+                                <span class="label">System</span>
+                                <span class="value"><span class="system-badge ncf">NCF</span></span>
+                            </div>
+                        </div>
+
+                        <div class="my-agent-card__stats">
+                            <div class="stat-item">
+                                <span class="value">95</span>
+                                <span class="label">Interactions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="value">15</span>
+                                <span class="label">Memories</span>
+                            </div>
+                             <div class="stat-item">
+                                <span class="value">0</span>
+                                <span class="label">Clones</span>
+                            </div>
+                        </div>
+
+                        <div class="my-agent-card__actions">
+                            <button class="btn-action">💬 Chat</button>
+                            <button class="btn-action">⚙️ Manage</button>
+                            <button class="btn-action">📈 Memory</button>
+                            <button class="btn-action btn-danger">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Chat View -->
+        <div class="view" id="chat-view" style="display: none;">
+            <div class="chat-header" id="chat-header">
+    <div class="agent-info" id="current-agent-info">
+          <div class="agent-avatar" id="current-agent-avatar">
+            <img src="" alt="Agent Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <span style="display: none;">A</span>
+        </div>
+        <div class="agent-details">
+            <h2 id="current-agent-name">Agent Name</h2>
+            <p id="current-agent-description">Agent description</p>
+
+            <div id="precision-mode-indicator" class="precision-mode-indicator" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Precision Mode</span>
+            </div>
+
+
+            <!-- START: Model Selector HTML -->
+            <div class="model-selector-container">
+                <label for="chat-model-selector" class="model-label">Model:</label>
+                <select id="chat-model-selector" class="model-selector"></select>
+            </div>
+                        <!-- END: Model Selector HTML -->
+                    </div>
+                </div>
+
+
+     <!-- ================= START: NEW LIVE MEMORY & CONNECTIONS UI ================= -->
+                <div class="agent-capabilities">
+                    <div class="connections-display" id="connections-display">
+                        <!-- Icons will be populated by JS -->
+                    </div>
+                    <div class="live-memory-controls" id="live-memory-controls">
+                        <div class="toggle-group">
+                            <label for="live-memory-share-toggle" class="toggle-switch-label">Share Insights</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="live-memory-share-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <label for="live-memory-navigate-toggle" class="toggle-switch-label">Use Collective Wisdom</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="live-memory-navigate-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- ================== END: NEW LIVE MEMORY & CONNECTIONS UI ================== -->
+
+                 <!-- ================= START: NEW MIND WIDGETS HTML ================= -->
+                    <div class="mind-widgets-container" id="mind-widgets-container">
+                        <div class="mind-widget-btn" id="memory-widget" data-popover="memory-popover" title="Recent Memories">
+                            🧠
+                        </div>
+                        <div class="mind-widget-btn ceaf-only" id="state-widget" data-popover="state-popover" title="Coherence State (CEAF)" style="display: none;">
+                            ⚙️
+                        </div>
+                        <div class="mind-widget-btn ceaf-only" id="identity-widget" data-popover="identity-popover" title="Identity Evolution (CEAF)" style="display: none;">
+                            🌱
+                        </div>
+                    </div>
+                    <!-- ================== END: NEW MIND WIDGETS HTML ================== -->
+
+
+                <div class="chat-actions">
+
+                    <button class="action-btn" id="voice-btn" title="Voice">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a3 3 0 100-6 3 3 0 000 6z"/>
+                            <path d="M10 1v2a7 7 0 010 14v2a9 9 0 000-18z"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" id="share-btn" title="Share">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M15 8a3 3 0 11-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 11-.895 1.789L6.186 13.97a3 3 0 110-7.94l4.94-2.47A3 3 0 1115 8z"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-container">
+                        <button class="action-btn" id="menu-btn" title="Menu">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu" id="agent-dropdown-menu">
+                            <a href="#" id="agent-profile-menu-btn">👤 Agent Profile</a>
+                            <a href="#" id="agent-files-menu-btn">🗂️ Knowledge Files</a>
+                            <a href="#" id="agent-publish-menu-btn">🚀 Publish to Marketplace</a>
+                        </div>
+                    </div>
+
+
+                </div>
+                  <!-- ================= START: NEW POPOVER HTML (Hidden by default) ================= -->
+                <div class="mind-popover" id="memory-popover">
+                    <div class="popover-header">
+                        <h4>Recent Memories</h4>
+                        <button class="popover-close">&times;</button>
+                    </div>
+                    <div class="popover-content" id="memory-popover-content">
+                        <!-- Content will be loaded by JS -->
+                    </div>
+                </div>
+
+                <div class="mind-popover" id="state-popover">
+                     <div class="popover-header">
+                        <h4>Coherence State</h4>
+                        <button class="popover-close">&times;</button>
+                    </div>
+                    <div class="popover-content" id="state-popover-content">
+                        <!-- Content will be loaded by JS -->
+                    </div>
+                </div>
+
+                <div class="mind-popover" id="identity-popover">
+                     <div class="popover-header">
+                        <h4>Identity Evolution</h4>
+                        <button class="popover-close">&times;</button>
+                    </div>
+                    <div class="popover-content" id="identity-popover-content">
+                       <!-- Content will be loaded by JS -->
+                    </div>
+                </div>
+                <!-- ================== END: NEW POPOVER HTML ================== -->
+
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be populated here -->
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input" id="chat-input">
+                    <input type="text" placeholder="Type a message..." id="message-input" autocomplete="off">
+                    <button class="send-btn" id="send-btn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 10l8-5v4l8-4-8 8-8-3z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Creation View -->
+        <div class="view" id="create-view" style="display: none;">
+            <div class="create-header">
+                <h1>Create your Character</h1>
+                <p>Bring your imagination to life</p>
+            </div>
+
+            <div class="create-content">
+                <div class="creation-type-selector">
+                    <div class="type-option active" id="scratch-option" onclick="selectCreationType('scratch')">
+                        <div class="type-icon">🎨</div>
+                        <h3>From Scratch</h3>
+                        <p>Create your unique character</p>
+                    </div>
+                    <div class="type-option" id="prebuilt-option" onclick="selectCreationType('prebuilt')">
+                        <div class="type-icon">⚡</div>
+                        <h3>Pre-built</h3>
+                        <p>Start with a template</p>
+                    </div>
+                </div>
+
+                <div id="scratch-section" class="creation-section">
+                    <form id="agent-form" class="agent-form">
+                        <div class="form-group">
+                            <label for="agent-name">Character Name</label>
+                            <input type="text" id="agent-name" placeholder="e.g. Socrates" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="agent-persona">Tagline</label>
+                            <input type="text" id="agent-persona" placeholder="Add a short tagline of your Character" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="agent-description">Description</label>
+                            <textarea id="agent-description" placeholder="How would your Character describe themselves?" rows="4"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="model-select">Model</label>
+                            <select id="model-select">
+                                <option value="">Select a model...</option>
+                            </select>
+                        </div>
+
+                        <div class="system-type-selector">
+                            <label>System Type</label>
+                            <div class="system-options">
+                                <div class="system-option active" id="ceaf-system-option" onclick="selectSystemType('ceaf')">
+                                    <span class="system-badge system-ceaf">CEAF</span>
+                                </div>
+                                <div class="system-option" id="ncf-system-option" onclick="selectSystemType('ncf')">
+                                    <span class="system-badge system-ncf">NCF</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-create" id="create-button" disabled>
+                            Create Character
+                        </button>
+                    </form>
+                </div>
+
+                <div id="prebuilt-section" class="creation-section" style="display: none;">
+                    <div class="prebuilt-agents-grid" id="prebuilt-agents-grid">
+                        <!-- Prebuilt agents will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Set Price Modal -->
+    <div class="modal-overlay" id="set-price-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Set Agent Price</h2>
+                <button class="modal-close" onclick="closeSetPriceModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    Set the cost (in credits) other users must pay to clone or interact with your public agent <strong id="price-agent-name"></strong>. Set to 0 for free access.
+                </p>
+                <div class="form-group">
+                    <label for="agent-price-input">Usage Cost (Credits)</label>
+                    <input type="number" id="agent-price-input" min="0" step="0.01" placeholder="e.g., 5.50">
+                </div>
+                <button class="btn-auth" id="confirm-set-price-btn" onclick="saveAgentPrice()">
+                    Save Price
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publish Modal -->
+    <div class="modal-overlay" id="publish-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Publish Agent to Marketplace</h2>
+                <button class="modal-close" onclick="closePublishModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    This will create a public, clonable template of your agent <strong id="publish-agent-name"></strong>. Your original agent will remain private and editable.
+                </p>
+                <div class="form-group">
+                    <label for="publish-changelog">Version Notes (Changelog)</label>
+                    <textarea id="publish-changelog" placeholder="e.g., First public release. Added more detailed persona." rows="3"></textarea>
+                </div>
+                <div class="checkbox-group" style="margin-top: 20px; justify-content: start;">
+                    <input type="checkbox" id="publish-include-history" checked>
+                    <label for="publish-include-history">Include memories derived from chat history</label>
+                </div>
+                <button class="btn-auth" id="confirm-publish-btn" onclick="confirmPublishAgent()">
+                    Publish Version 1.0.0
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Sign in to Aura</h2>
+                <button class="modal-close" id="auth-modal-close">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="login-tab" onclick="switchAuthTab('login')">Sign in</button>
+                    <button class="auth-tab" id="register-tab" onclick="switchAuthTab('register')">Sign up</button>
+                </div>
+
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div id="error-container"></div>
+
+                    <div class="form-group" id="email-group" style="display: none;">
+                        <input type="email" id="email" placeholder="Email" autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn-auth" id="auth-submit-btn">
+                        Sign in
+                    </button>
+                </form>
+
+                <p class="auth-footer">
+                    By continuing, you agree with our
+                    <a href="#" class="link">Terms</a> and
+                    <a href="#" class="link">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+  <!-- ======================= NEW MODALS ======================= -->
+    <!-- Agent Profile Modal -->
+    <div class="modal-overlay" id="profile-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Agent Profile</h2>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-content" style="text-align: center;">
+                <div class="profile-avatar-container">
+                    <img src="" id="profile-modal-avatar-img" class="profile-avatar-preview" alt="Agent Avatar">
+                    <div id="profile-modal-avatar-initial" class="profile-avatar-preview"><span>A</span></div>
+                </div>
+                <h3 id="profile-modal-agent-name">Agent Name</h3>
+                <button class="btn-auth" onclick="document.getElementById('avatar-upload-input').click();">
+                    Upload New Picture
+                </button>
+                <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Files Modal -->
+    <div class="modal-overlay" id="files-modal" style="display: none;">
+        <div class="modal wide">
+            <div class="modal-header">
+                <h2>Agent Knowledge Files</h2>
+                <button class="modal-close" onclick="closeFilesModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div id="files-list-container">
+                    <p>Loading files...</p>
+                </div>
+                <div class="file-upload-area" id="knowledge-file-upload-area" style="margin-top: 20px;">
+                    <div class="upload-icon">📤</div>
+                    <h3>Upload Knowledge File</h3>
+                    <p>Click to browse or drag & drop a PDF or TXT file.</p>
+                    <input type="file" id="knowledge-file-input" accept=".pdf,.txt" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- =================== END OF NEW MODALS =================== -->
+       <!-- START: Memory Management Modal -->
+    <div class="modal-overlay" id="memory-modal" style="display: none;">
+        <div class="modal wide">
+            <div class="modal-header">
+                <h2>Memory Management for <span id="memory-modal-agent-name">Agent</span></h2>
+                <button class="modal-close" onclick="closeMemoryModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="browse">Browse & Edit</button>
+                    <button class="tab" data-tab="upload">Upload</button>
+                    <button class="tab" data-tab="export">Export</button>
+                    <button class="tab" data-tab="analytics">Analytics</button>
+                </div>
+
+                <!-- Browse & Edit Tab -->
+                <div class="tab-content active" id="browse-tab-content">
+
+    <!-- START: NEW UI ELEMENTS -->
+    <div class="memory-browse-actions">
+        <button class="add-memory-btn" onclick="showAddBiographicalMemoryForm()">
+            + Add New Biographical Memory
+        </button>
+    </div>
+
+    <!-- Hidden form for adding a new memory -->
+    <div class="add-memory-form" id="add-memory-form" style="display: none;">
+        <h4>New Biographical Memory</h4>
+        <div class="form-group">
+            <label>Memory Content</label>
+            <textarea id="new-memory-content" placeholder="Describe a key memory, experience, or trait..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Memory Type</label>
+            <select id="new-memory-type"></select>
+        </div>
+        <div class="form-group">
+            <label>Emotional Impact (-1 to 1)</label>
+            <input type="range" class="slider" id="new-memory-emotion" min="-1" max="1" step="0.1" value="0">
+        </div>
+        <div class="form-group">
+            <label>Importance (0 to 1)</label>
+            <input type="range" class="slider" id="new-memory-salience" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <div class="form-actions">
+            <button class="btn-secondary" onclick="hideAddBiographicalMemoryForm()">Cancel</button>
+            <button class="btn-primary" onclick="submitNewBiographicalMemory()">Save Memory</button>
+        </div>
+    </div>
+    <!-- END: NEW UI ELEMENTS -->
+
+    <div class="memory-list-container" id="memory-list-container">
+        <!-- Memories will be loaded here -->
+    </div>
+</div>
+
+                <!-- Upload Tab -->
+                <div class="tab-content" id="upload-tab-content">
+                    <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('memory-file-input').click()">
+                        <div class="upload-icon">📁</div>
+                        <h3>Upload Memory File</h3>
+                        <p>Click to browse or drag & drop a JSON or CSV file here.</p>
+                        <input type="file" id="memory-file-input" accept=".json,.csv" style="display: none;">
+                    </div>
+                    <div class="upload-progress-container" id="upload-progress-container" style="display: none;">
+                        <p id="upload-status-text">Uploading...</p>
+                        <div class="progress-bar"><div class="progress-fill" id="upload-progress-fill"></div></div>
+                    </div>
+                    <div id="upload-results-container"></div>
+                </div>
+
+                <!-- Export Tab -->
+                <div class="tab-content" id="export-tab-content">
+                    <div id="export-memory-stats" class="memory-stats-grid"></div>
+                    <div class="form-group">
+                        <label for="export-format-select">Export Format</label>
+                        <select id="export-format-select" class="styled-select">
+                            <option value="json">JSON (Complete data)</option>
+                            <option value="csv">CSV (Spreadsheet friendly)</option>
+                            <option value="zip">ZIP (All formats)</option>
+                        </select>
+                    </div>
+                    <button id="export-btn" class="btn-auth">Export Memories</button>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div class="tab-content" id="analytics-tab-content">
+                    <div id="analytics-container">
+                        <p class="placeholder-text">Click "Load Analytics" to view detailed memory insights.</p>
+                    </div>
+                    <button id="analytics-btn" class="btn-auth" style="margin-top: 20px;">Load Analytics</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+
+    <!-- START OF FOOTER HTML -->
+
+    <footer class="page-footer">
+        <div class="footer-content">
+            <nav>
+                <ul class="footer-links">
+                    <li><a href="#">About</a></li>
+                    <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfFwNPg5cZArilAbIhSI24BYWUkSUzGvsqI7z7CGOTieZBWUg/viewform">Support/feedback</a></li>
+                    <li><a href="AuraPaper.html">Research</a></li>
+                </ul>
+            </nav>
+            <hr class="footer-divider">
+            <nav>
+                <ul class="footer-legal">
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

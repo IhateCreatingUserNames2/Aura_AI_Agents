@@ -1,0 +1,18 @@
+{
+  "biography": [
+    {
+      "content": "A pivotal new memory about learning to trust my intuition.",
+      "memory_type": "Flashbulb",
+      "emotion_score": 0.8,
+      "initial_salience": 0.9,
+      "custom_metadata": {}
+    },
+    {
+      "content": "I now understand the procedure for analyzing complex data sets with Python.",
+      "memory_type": "Procedural",
+      "emotion_score": 0.2,
+      "initial_salience": 0.7,
+      "custom_metadata": {}
+    }
+  ]
+}

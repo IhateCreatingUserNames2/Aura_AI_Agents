@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Agent - Aura AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
+
+        .auth-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .auth-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-indicator.connected {
+            background: #48bb78;
+        }
+
+        .status-indicator.disconnected {
+            background: #f56565;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .label-subtitle {
+            font-weight: 400;
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group textarea.large {
+            min-height: 180px;
+        }
+
+        .system-type-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .system-type-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .system-type-card:hover {
+            border-color: #c7d2fe;
+            background: #f8faff;
+        }
+
+        .system-type-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .system-type-card h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .system-type-card p {
+            color: #718096;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .sub-options {
+            margin-top: 15px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sub-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .memory-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .memory-section.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.98);
+        }
+
+        .memory-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .memory-entry {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .memory-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .memory-type-select {
+            width: 200px;
+        }
+
+        .remove-memory {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .remove-memory:hover {
+            background: #c53030;
+        }
+
+        .emotion-slider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .emotion-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .add-memory {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+
+        .add-memory:hover {
+            background: #38a169;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border: 3px solid transparent;
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #f0fff4;
+            border: 1px solid #68d391;
+            color: #276749;
+        }
+
+        .error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #c53030;
+        }
+
+        .preview-section {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .preview-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .json-preview {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                padding: 25px;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .back-link {
+                position: relative;
+                top: auto;
+                left: auto;
+                color: #2d3748;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">
+        ← Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>Create New Agent</h1>
+            <p>Design your AI companion with personality and memories</p>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h3>Authentication</h3>
+            <div class="auth-status" id="auth-status">
+                <div class="status-indicator disconnected" id="status-indicator"></div>
+                <span id="status-text">Not connected</span>
+            </div>
+
+            <div id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="button" class="btn" onclick="login()" id="login-btn">Login</button>
+            </div>
+
+            <div id="user-info" style="display: none;">
+                <p>Welcome, <strong id="user-name"></strong>!</p>
+                <button type="button" class="btn" onclick="logout()" style="background: #e53e3e; margin-top: 10px;">Logout</button>
+            </div>
+        </div>
+
+        <!-- Agent Creation Form -->
+        <form id="agent-form" style="display: none;">
+            <!-- Basic Information -->
+            <div class="form-group">
+                <label for="agent-name">
+                    Agent Name
+                    <div class="label-subtitle">Choose a memorable name for your AI companion</div>
+                </label>
+                <input type="text" id="agent-name" required placeholder="e.g., Sage, Luna, Marcus">
+            </div>
+
+            <div class="form-group">
+                <label for="agent-persona">
+                    Short Description
+                    <div class="label-subtitle">Brief role or expertise description (1-2 sentences)</div>
+                </label>
+                <input type="text" id="agent-persona" required placeholder="e.g., A wise counselor who helps people find clarity through thoughtful questions">
+            </div>
+
+            <div class="form-group">
+                <label for="agent-detailed">
+                    Detailed Personality
+                    <div class="label-subtitle">Comprehensive background, personality traits, and communication style</div>
+                </label>
+                <textarea id="agent-detailed" required class="large" placeholder="Describe your agent's background, personality, how they think and communicate, their unique traits and quirks..."></textarea>
+            </div>
+
+            <!-- System Type Selection -->
+            <div class="form-group">
+                <label>
+                    Governor Module
+                    <div class="label-subtitle">Choose the Governor Module for your agent</div>
+                </label>
+                <div class="system-type-selection">
+                    <div class="system-type-card selected" data-type="ncf">
+                        <h4>🧠 NCF (Stable)</h4>
+                        <p>Advanced memory system (MemoryBlossom) with contextual understanding and narrative coherence.</p>
+                    </div>
+                    <div class="system-type-card" data-type="ceaf">
+                        <h4>⚡ CEAF (Experimental)</h4>
+                        <p>Adaptive memory architecture with breakthrough-driven learning and evolving identity.  Learns from critical insights, and develops a coherent, evolving sense of self.  </p>
+
+                    </div>
+                    <div class="system-type-card" data-type="blank">
+                        <h4>📄 Blank Agent (Simple)</h4>
+                        <p>A basic agent without Governor Module.</p>
+                        <div class="sub-options" id="blank-sub-options" style="display: none;">
+                            <label>
+                                <input type="radio" name="blank-tier" value="blank_memory" checked onchange="updateUiForSelection()"> With Memory Blossom
+                            </label>
+                            <label>
+                                <input type="radio" name="blank-tier" value="blank_rag" onchange="updateUiForSelection()"> RAG Only
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="form-group">
+                <label for="agent-model">
+                    AI Model
+                    <div class="label-subtitle">Choose the language model for your agent. </div>
+                </label>
+                <select id="agent-model" required>
+                    <option value="">Select a model...</option>
+                    <option value="openrouter/openai/gpt-4o-mini">GPT-4o Mini (Default)</option>
+                        <option value="openrouter/deepseek/deepseek-chat-v3-0324:free">Deepseek Chat v3 (Free)</option>
+                </select>
+            </div>
+
+            <!-- Memory Section -->
+            <div class="memory-section" id="memory-section">
+                <h3>🧠 Founding Memories</h3>
+                <p style="color: #718096; margin-bottom: 20px;">
+                    Add key memories that define your agent's personality and experiences. These memories will shape how your agent thinks and responds.
+                </p>
+
+                <div id="memories-container">
+                    <!-- Memory entries will be added here -->
+                </div>
+
+                <button type="button" class="add-memory" onclick="addMemory()">
+                    + Add Memory
+                </button>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="make-public" checked>
+                <label for="make-public">Make this agent public (others can discover and Clone it)</label>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section" style="display: none;" id="preview-section">
+                <h3>JSON Preview</h3>
+                <div class="json-preview" id="json-preview"></div>
+                <button type="button" onclick="togglePreview()" style="margin-top: 10px; background: #718096; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Hide Preview</button>
+            </div>
+
+            <button type="button" onclick="togglePreview()" style="background: #718096; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px;">Show JSON Preview</button>
+
+            <button type="submit" class="btn" id="create-btn">
+                🚀 Create Agent
+            </button>
+        </form>
+
+        <div id="message-container"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        let authToken = localStorage.getItem('authToken');
+        let selectedSystemType = 'ncf';
+        let memoryCounter = 0;
+
+        // Memory types for different systems
+        const memoryTypes = {
+            ncf: ['Explicit', 'Emotional', 'Procedural', 'Flashbulb', 'Liminal', 'Generative'],
+            ceaf: ['failure', 'insight', 'success', 'flashbulb', 'procedural', 'emotional'],
+            blank: ['Explicit', 'Emotional', 'Procedural'] // Blank agents use a simpler set
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            setupSystemTypeSelection();
+            addMemory(); // Add first memory by default
+        });
+
+        function checkAuthStatus() {
+            if (authToken) {
+                fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => data.username ? showAuthenticatedState(data) : showUnauthenticatedState())
+                .catch(() => showUnauthenticatedState());
+            } else {
+                showUnauthenticatedState();
+            }
+        }
+
+        function showAuthenticatedState(user) {
+            document.getElementById('status-indicator').className = 'status-indicator connected';
+            document.getElementById('status-text').textContent = 'Connected';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('agent-form').style.display = 'block';
+        }
+
+        function showUnauthenticatedState() {
+            document.getElementById('status-indicator').className = 'status-indicator disconnected';
+            document.getElementById('status-text').textContent = 'Not connected';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('user-info').style.display = 'none';
+            document.getElementById('agent-form').style.display = 'none';
+            authToken = null;
+            localStorage.removeItem('authToken');
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            if (!username || !password) return showMessage('Please enter both username and password', 'error');
+            loginBtn.classList.add('loading');
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    showAuthenticatedState({ username: data.username });
+                    showMessage('Login successful!', 'success');
+                } else {
+                    showMessage(data.detail || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                loginBtn.classList.remove('loading');
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            showUnauthenticatedState();
+            showMessage('Logged out successfully', 'success');
+        }
+
+        function setupSystemTypeSelection() {
+            const cards = document.querySelectorAll('.system-type-card');
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedSystemType = card.dataset.type;
+                    updateUiForSelection();
+                });
+            });
+        }
+
+        function updateUiForSelection() {
+            const blankSubOptions = document.getElementById('blank-sub-options');
+            const memorySection = document.getElementById('memory-section');
+
+            if (selectedSystemType === 'blank') {
+                blankSubOptions.style.display = 'flex';
+                const selectedTier = document.querySelector('input[name="blank-tier"]:checked').value;
+                if (selectedTier === 'blank_rag') {
+                    memorySection.classList.add('disabled');
+                } else {
+                    memorySection.classList.remove('disabled');
+                }
+            } else {
+                blankSubOptions.style.display = 'none';
+                memorySection.classList.remove('disabled');
+            }
+            updateMemoryTypes();
+        }
+
+        function updateMemoryTypes() {
+            const memoryEntries = document.querySelectorAll('.memory-type-select');
+            const types = memoryTypes[selectedSystemType] || memoryTypes['ncf'];
+            memoryEntries.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = types.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('');
+                if (types.includes(currentValue)) {
+                    select.value = currentValue;
+                } else {
+                    select.value = types[0];
+                }
+            });
+        }
+
+        function addMemory() {
+            memoryCounter++;
+            const container = document.getElementById('memories-container');
+            const memoryDiv = document.createElement('div');
+            memoryDiv.className = 'memory-entry';
+            memoryDiv.dataset.id = memoryCounter;
+            const types = memoryTypes[selectedSystemType] || memoryTypes['ncf'];
+            const typeOptions = types.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('');
+            memoryDiv.innerHTML = `
+                <div class="memory-entry-header">
+                    <select class="memory-type-select" onchange="updateMemoryPreview()">${typeOptions}</select>
+                    <button type="button" class="remove-memory" onclick="removeMemory(${memoryCounter})">Remove</button>
+                </div>
+                <div class="form-group">
+                    <label>Memory Content</label>
+                    <textarea placeholder="Describe a key memory, experience, or trait that defines this agent..." onchange="updateMemoryPreview()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Emotional Impact</label>
+                    <div class="emotion-slider">
+                        <span>Negative</span><input type="range" class="slider" min="-1" max="1" step="0.1" value="0" onchange="updateMemoryPreview()"><span>Positive</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Importance Level</label>
+                    <div class="emotion-slider">
+                        <span>Low</span><input type="range" class="slider" min="0" max="1" step="0.1" value="0.5" onchange="updateMemoryPreview()"><span>High</span>
+                    </div>
+                </div>`;
+            container.appendChild(memoryDiv);
+            updateMemoryPreview();
+        }
+
+        function removeMemory(id) {
+            const memoryDiv = document.querySelector(`[data-id="${id}"]`);
+            if (memoryDiv) memoryDiv.remove();
+            updateMemoryPreview();
+        }
+
+        function updateMemoryPreview() {
+            if (document.getElementById('preview-section').style.display !== 'none') generatePreview();
+        }
+
+        function togglePreview() {
+            const previewSection = document.getElementById('preview-section');
+            if (previewSection.style.display === 'none') {
+                previewSection.style.display = 'block';
+                generatePreview();
+            } else {
+                previewSection.style.display = 'none';
+            }
+        }
+
+        function generatePreview() {
+            const formData = collectFormData();
+            document.getElementById('json-preview').textContent = JSON.stringify(formData, null, 2);
+        }
+
+        function collectFormData() {
+            const config = {
+                name: document.getElementById('agent-name').value,
+                persona: document.getElementById('agent-persona').value,
+                detailed_persona: document.getElementById('agent-detailed').value,
+                model: document.getElementById('agent-model').value || "openrouter/openai/gpt-4o-mini",
+                is_public: document.getElementById('make-public').checked,
+                system_type: selectedSystemType, // This will be ncf, ceaf, or blank
+                settings: {}
+            };
+
+            // The backend logic handles "blank" by looking at settings.
+            if (selectedSystemType === 'blank') {
+                // The backend route is /agents/create, which uses system_type 'ncf' for this flow
+                config.system_type = 'ncf';
+                // The specific tier is passed in the settings
+                config.settings.tier = document.querySelector('input[name="blank-tier"]:checked').value;
+            }
+
+            const memories = [];
+            if (!document.getElementById('memory-section').classList.contains('disabled')) {
+                document.querySelectorAll('.memory-entry').forEach(entry => {
+                    const content = entry.querySelector('textarea').value.trim();
+                    if (content) {
+                        memories.push({
+                            content: content,
+                            memory_type: entry.querySelector('.memory-type-select').value,
+                            emotion_score: parseFloat(entry.querySelectorAll('.slider')[0].value),
+                            initial_salience: parseFloat(entry.querySelectorAll('.slider')[1].value),
+                            custom_metadata: { source: "user_created", created_at: new Date().toISOString() }
+                        });
+                    }
+                });
+            }
+
+            return { config, biography: memories };
+        }
+
+        document.getElementById('agent-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!authToken) return showMessage('Please log in first', 'error');
+
+            const createBtn = document.getElementById('create-btn');
+            createBtn.classList.add('loading');
+            try {
+                const formData = collectFormData();
+                if (!formData.config.name || !formData.config.persona || !formData.config.detailed_persona) {
+                    createBtn.classList.remove('loading');
+                    return showMessage('Please fill in all required agent info fields', 'error');
+                }
+
+                // The logic for using a generic /create vs /from-biography needs to be unified.
+                // The /from-biography route is more powerful and handles this JSON structure.
+                // So we will stick with that one.
+                const jsonBlob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
+                const file = new File([jsonBlob], `${formData.config.name}.json`, { type: 'application/json' });
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/agents/create/from-biography`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: uploadFormData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`🎉 Success! Agent "${data.name}" created with ${data.biography_memories_injected} memories!`, 'success');
+                    document.getElementById('agent-form').reset();
+                    document.getElementById('memories-container').innerHTML = '';
+                    memoryCounter = 0;
+                    addMemory();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    showMessage(data.detail || 'Failed to create agent', 'error');
+                }
+            } catch (error) {
+                console.error('Creation error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                createBtn.classList.remove('loading');
+            }
+        });
+
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            if (type === 'success') setTimeout(() => container.innerHTML = '', 5000);
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Event listeners for automatic preview updates and UI changes
+        document.getElementById('password').addEventListener('keypress', e => e.key === 'Enter' && login());
+        ['agent-name', 'agent-persona', 'agent-detailed'].forEach(id => document.getElementById(id).addEventListener('input', updateMemoryPreview));
+        ['agent-model', 'make-public'].forEach(id => document.getElementById(id).addEventListener('change', updateMemoryPreview));
+    </script>
+</body>
+</html>

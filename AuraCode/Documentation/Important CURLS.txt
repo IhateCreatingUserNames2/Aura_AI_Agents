@@ -1,0 +1,3 @@
+python uploader.py --create "E:\Aura\agents_json_prebuilt" --username USERNAME --url https://localhost:8000 
+
+Creates all Agents from JSON Files in folder agents_json_prebuilt . 
