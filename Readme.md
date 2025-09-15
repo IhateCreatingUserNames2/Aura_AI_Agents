@@ -86,7 +86,11 @@ Follow these steps to set up and run the AuraCode server locally.
 ### 1. Prerequisites
 
 - Python 3.10+
-- Git
+- langChain
+- LangGraph
+- Google ADK
+- OpenRouter
+- LittleLLM
 
 ### 2. Installation
 
