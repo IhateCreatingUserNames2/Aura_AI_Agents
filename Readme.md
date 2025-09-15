@@ -90,8 +90,9 @@ Follow these steps to set up and run the AuraCode server locally.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [ [<YOUR_REPOSITORY_URL>](https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/new/main)](https://github.com/IhateCreatingUserNames2/Aura_AI_Agents)
-    cd AuraCode
+    git clone https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/tree/main/AuraCode
+    or Download https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/AuraCode.zip
+    cd AuraCode 
     ```
 
 2.  **Create and activate a virtual environment:**
@@ -112,7 +113,7 @@ Follow these steps to set up and run the AuraCode server locally.
     ```
 
 4.  **Configure Environment Variables:**
-    Create a file named `.env` in the project root and add your API keys:
+    Create a file named `.env` in the project root and add your API keys: - CHECK Example.ENV ********* 
     ```env
     # Required for most LLM operations
     OPENROUTER_API_KEY="sk-or-v1-..."
@@ -128,8 +129,10 @@ Follow these steps to set up and run the AuraCode server locally.
     ```
 
 5.  **Set up the Database:**
-    Run the migration script to create and verify the SQLite database schema.
+    Run the init or migration script to create and verify the SQLite database schema.
     ```bash
+    python init_db.py
+    or 
     python db_migration.py
     ```
 
@@ -150,10 +153,11 @@ uvicorn main_app:app --host 0.0.0.0 --port 8000 --reload
 The project includes several scripts in the root directory for management and testing:
 
 - `db_migration.py`: Safely applies schema changes to the SQLite database.
-- `run_locomo_benchmark.py`: Runs the LoCoMo benchmark on a specific agent to test its long-term memory capabilities.
-- `uploader.py`: A CLI tool for bulk-creating agents from JSON "biography" files.
+- `uploader.py`: A CLI tool for bulk-creating agents from JSON "biography" files. (check  https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/AuraCode/Documentation/Important%20CURLS.txt ) 
 - `wisdom_collector.py`: A process that can be run in the background to index insights from the "Live Collective Memory."
 - `check_db_agents.py`: A CLI tool to check the publication status of agents in the database.
+- `ExportCodeBaseToTXT.py`: Export all .py files into a single .txt file 
+- `check_db_agents.py`: Check if Agent exists
 
 ## 📁 Project Structure (Simplified)
 
