@@ -6,7 +6,7 @@ Online DEMO: https://cognai.space/
 
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Framework](https://img.shields.io/badge/framework-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
+
 
 
 **Aura AI Agents** is a powerful, flexible, and scalable framework for building, managing, and interacting with advanced conversational AI agents. Built on Python with FastAPI, it provides a robust foundation for creating multi-tenant AI experiences, where each agent operates in an isolated environment with its own memory system, personality, and capabilities.
