@@ -200,5 +200,6 @@ Contributions are welcome! If you'd like to improve AuraCode, please follow thes
 
 ## 📄 License
 
-This project is released under a custom license designed to be free for small-scale use while requiring a commercial license for larger applications.
+This project is released under a custom license designed to be free for small-scale use. 
+If you want to fund this project contact me dwint@live.com 
 
