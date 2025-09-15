@@ -201,12 +201,4 @@ Contributions are welcome! If you'd like to improve AuraCode, please follow thes
 ## 📄 License
 
 This project is released under a custom license designed to be free for small-scale use while requiring a commercial license for larger applications.
-Free for Personal & Small-Scale Use
-You are free to use, modify, and deploy this software for personal projects, academic research, and small-scale applications under the following condition:
-Your application or service built using AuraCode must serve fewer than 1,000 monthly active users (MAU).
-Commercial License Required
-A commercial license is required if your application or service using AuraCode meets any of the following criteria:
-It serves 1,000 or more monthly active users (MAU).
-It is developed or maintained by a company with an annual revenue exceeding $100,000 USD (or equivalent).
-You intend to sublicense, re-sell, or re-brand the AuraCode framework itself as a primary product or service.
-To inquire about a commercial license and discuss terms, please contact the project author at dwint@live.com or open an issue on this GitHub repository.
+
