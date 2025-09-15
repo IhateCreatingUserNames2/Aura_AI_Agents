@@ -100,6 +100,7 @@ The `prebuilt_agents_system.py` file contains the `PersonalityArchitect`. This s
 2.  This archetype maps to a **`PersonalityMatrix`**, which contains lists of `MemoryTemplate` objects for core beliefs, emotional patterns, etc.
 3.  The `create_personality_memories()` method converts these templates into a final list of `Memory` objects, ready to be injected into a new agent.
 
+   
 ### How They Are Used
 
 Biographical memories are the key to creating rich agents instantly and are used in several ways via the API:
