@@ -92,7 +92,7 @@ Follow these steps to set up and run the AuraCode server locally.
 - LangGraph
 - Google ADK
 - OpenRouter
-- LittleLLM
+- LiteLLM
 
 ### 2. Installation
 
