@@ -269,6 +269,218 @@ Finally, add the logic to the `process_message` method in `NCFAuraAgentInstance`
 
 ### Step 5: Create the Specialist Agent Instance
 
-You'll need to create the specialist agent in the system one time, similar to the TensorArt specialist. You can do this via an admin API endpoint or a startup script that calls the `agent_manager.create_agent` method using the hardcoded `WEATHER_SPECIALIST_AGENT_ID`.
+Think of the files you created in Steps 1-4 (`weather_tool.py`, `weather_specialist_instruction.py`, and the changes in `agent_manager.py`) as the **blueprint** for a Weather Specialist. You've defined what it *can do* and how it *should think*.
 
-That's it! You have now successfully extended the AuraCode framework with a new, fully integrated Specialist Agent. The Orchestrator will now automatically route all weather-related queries to your expert, which will use its dedicated tools and instructions to provide an answer. This pattern can be repeated for any number of specialized tasks.
+However, at this point, no actual agent instance based on that blueprint exists in your system's database or on its file system. The Orchestrator knows that if it sees a `WEATHER_INQUIRY` intent, it should look for an agent with the ID `d5e8a1b3-...`, but if it looks, it will find nothing.
+
+**Step 5 is the act of "manufacturing" the agent from the blueprint.** It's a one-time action that creates the necessary database record and configuration files, making the specialist a real, addressable entity that the Orchestrator can delegate tasks to.
+
+---
+
+### The "How": Two Concrete Methods to Create the Instance
+
+Here are two practical ways to perform this one-time creation, with detailed examples.
+
+#### Method 1: Using the Admin API Endpoint (Recommended)
+
+This is the cleanest and most robust way to do it, especially for a running system. We will use the `/admin/create-specialist-agents` endpoint that was added to `api/routes.py`.
+
+First, you need to add your new Weather Specialist to the list of specialists that this endpoint knows how to create.
+
+**1. Update `api/routes.py`:**
+
+Find the `create_all_specialist_agents` function and add your new weather agent to the `specialists_to_create` dictionary.
+
+```python
+# In api/routes.py
+
+# ... other imports
+from weather_specialist_instruction import WEATHER_SPECIALIST_INSTRUCTION # Add this import
+from agent_manager import WEATHER_SPECIALIST_AGENT_ID # Add this import
+
+# ...
+
+@app.post("/admin/create-specialist-agents", tags=["Admin"], response_model=dict)
+async def create_all_specialist_agents(current_user: dict = Depends(verify_token)):
+    # ... (admin check logic)
+
+    specialists_to_create = {
+        "TensorArt": { ... },
+        "Speech": { ... },
+        "MCP": { ... },
+        "A2A": { ... },
+        # --- ADD YOUR NEW SPECIALIST HERE ---
+        "Weather": {
+            "id": WEATHER_SPECIALIST_AGENT_ID,
+            "persona": "An AI expert in providing weather forecasts.",
+            "instruction": WEATHER_SPECIALIST_INSTRUCTION,
+            "roles": ["specialist", "weather_inquiry"] # A role to identify its tools
+        }
+        # --- END OF ADDITION ---
+    }
+
+    # ... (the rest of the function remains the same)
+```
+
+**2. Run the API Command:**
+
+Once your server is running, you can create all the specialists (including your new one) by sending a `POST` request to that endpoint. You can use a tool like `curl` from your terminal.
+
+First, you need to log in as an admin user (e.g., `xupeta`) to get an authentication token.
+
+```bash
+# Step 2a: Log in and get the token
+TOKEN=$(curl -X POST "http://localhost:8000/auth/login" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "xupeta", "password": "your_password"}' \
+     | jq -r .access_token)
+
+echo "Got Token: $TOKEN"
+
+# Step 2b: Call the admin endpoint to create the specialists
+curl -X POST "http://localhost:8000/admin/create-specialist-agents" \
+     -H "Authorization: Bearer $TOKEN"
+```
+
+**What Happens:**
+*   The API receives the request.
+*   It iterates through the `specialists_to_create` dictionary.
+*   It sees the new "Weather" entry.
+*   It checks if an agent with `WEATHER_SPECIALIST_AGENT_ID` already exists. If not...
+*   It creates the database record and the `d5e8a1b3-....json` configuration file on the file system, correctly setting its `roles` to `["specialist", "weather_inquiry"]`.
+
+**Advantages of this method:**
+*   **Idempotent:** You can run it multiple times, and it will only create agents that don't already exist.
+*   **Controlled:** It's a formal API action, easy to manage and secure.
+*   **No Code Changes (after initial setup):** You don't need to write a separate script.
+
+#### Method 2: Using a Startup Script (Good for Development)
+
+This method involves writing a simple Python script that you run once to provision the specialist agents. This is useful during initial development or for automated setup routines.
+
+**1. Create a `provision_specialists.py` script:**
+
+Create a new file in your project's root directory.
+
+```python
+# In a new file: provision_specialists.py
+
+import os
+from datetime import datetime
+from agent_manager import AgentManager, AgentConfig
+from database.models import AgentRepository
+
+# --- Import all specialist constants and instructions ---
+from agent_manager import (
+    TENSORART_SPECIALIST_AGENT_ID,
+    SPEECH_SPECIALIST_AGENT_ID,
+    WEATHER_SPECIALIST_AGENT_ID # Your new ID
+)
+from tensorart_specialist_instruction import TENSORART_SPECIALIST_INSTRUCTION
+from speech_specialist_instruction import SPEECH_SPECIALIST_INSTRUCTION
+from weather_specialist_instruction import WEATHER_SPECIALIST_INSTRUCTION # Your new instruction
+
+# --- Configuration ---
+# This should be the user_id of the system administrator
+ADMIN_USER_ID = "40c8d42f-858d-4060-b5be-8cef6480e9a3" # Example: xupeta's ID
+
+def provision():
+    """Creates system specialist agents if they don't already exist."""
+    print("🚀 Starting Specialist Agent Provisioning...")
+    
+    db_repo = AgentRepository()
+    agent_manager = AgentManager(db_repo=db_repo)
+
+    specialists = {
+        "TensorArt": {
+            "id": TENSORART_SPECIALIST_AGENT_ID,
+            "persona": "Image generation expert.",
+            "instruction": TENSORART_SPECIALIST_INSTRUCTION,
+            "roles": ["specialist", "image_generation"]
+        },
+        "Speech": {
+            "id": SPEECH_SPECIALIST_AGENT_ID,
+            "persona": "Text-to-speech expert.",
+            "instruction": SPEECH_SPECIALIST_INSTRUCTION,
+            "roles": ["specialist", "speech_processing"]
+        },
+        "Weather": {
+            "id": WEATHER_SPECIALIST_AGENT_ID,
+            "persona": "Weather forecast expert.",
+            "instruction": WEATHER_SPECIALIST_INSTRUCTION,
+            "roles": ["specialist", "weather_inquiry"]
+        }
+    }
+
+    for name, details in specialists.items():
+        agent_id = details["id"]
+        
+        # Check if the agent's config file already exists
+        if agent_id in agent_manager._agent_configs:
+            print(f"✅ Specialist '{name}' (ID: {agent_id}) already exists. Skipping.")
+            continue
+        
+        print(f"🔧 Creating Specialist '{name}' (ID: {agent_id})...")
+        
+        # We manually create the config to ensure the fixed ID and roles are used
+        agent_path = agent_manager.base_storage_path / ADMIN_USER_ID / agent_id
+        agent_path.mkdir(parents=True, exist_ok=True)
+        
+        config = AgentConfig(
+            agent_id=agent_id,
+            user_id=ADMIN_USER_ID,
+            name=f"{name} Specialist",
+            persona=details["persona"],
+            detailed_persona=details["instruction"],
+            model="openrouter/openai/gpt-4o-mini", # A cheap, fast model is fine for specialists
+            created_at=datetime.now(),
+            settings={"system_type": "ncf", "roles": details["roles"]}
+        )
+        
+        # Save the config file and update the in-memory cache
+        agent_manager._save_agent_config(config)
+        agent_manager._agent_configs[agent_id] = config
+        
+        # Create the corresponding database record
+        db_repo.create_agent(
+            agent_id=agent_id,
+            user_id=ADMIN_USER_ID,
+            name=f"{name} Specialist",
+            persona=details["persona"],
+            detailed_persona=details["instruction"],
+            model=config.model,
+            is_public=False # Specialists are internal system components
+        )
+        print(f"👍 Successfully created Specialist '{name}'.")
+
+    print("\n🎉 Provisioning complete!")
+
+
+if __name__ == "__main__":
+    provision()
+```
+
+**2. Run the script:**
+
+From your terminal (with the virtual environment activated), simply run the script once.
+
+```bash
+python provision_specialists.py
+```
+
+---
+
+### Summary of What Step 5 Accomplishes
+
+Regardless of which method you choose, the end result is the same:
+
+1.  **Database Record:** A new row is created in the `agents` table with the specialist's fixed UUID, its name, persona, and owner (the admin user).
+2.  **Filesystem State:** A new configuration file is created on disk (e.g., `agent_storage/<admin_user_id>/d5e8a1b3-....json`). This file contains the agent's settings, including the crucial `roles: ["specialist", "weather_inquiry"]` part.
+3.  **System Awareness:** The `AgentManager` loads this new configuration into its memory.
+
+Now, when a user asks, "What's the weather in Paris?", the system flows exactly as designed:
+1. Orchestrator receives the message.
+2. The intent router classifies it as `WEATHER_INQUIRY`.
+3. The `process_message` logic looks up the `WEATHER_SPECIALIST_AGENT_ID`.
+4. The `AgentManager` finds the now-existing agent instance.
+5. The message is delegated to the Weather Specialist, which uses its `WeatherClient` tool to get the answer and respond.
