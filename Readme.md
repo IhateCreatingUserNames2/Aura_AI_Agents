@@ -106,8 +106,7 @@ Follow these steps to set up and run the AuraCode server locally.
     The project uses several libraries. Install them using:
     ```bash
     pip install -r requirements.txt 
-    # NOTE: A requirements.txt file would need to be generated. Based on the code, it would include:
-    # fastapi uvicorn sqlalchemy python-dotenv litellm bcrypt pyjwt sentence-transformers scikit-learn faiss-cpu langgraph langchain
+    Double check
     ```
 
 4.  **Configure Environment Variables:**
