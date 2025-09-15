@@ -52,7 +52,8 @@ The framework is built around two distinct and powerful agent architectures: **N
 - Guide to the FrontEnd : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeIndexFrontEnd.md
 - Guide to Models and Credit: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMODELS.md
 - Guide to the MemoryBlossom and Adaptive Memory: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMemory.md
-- Guide How to Add Specialist Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeAddSpecialistAgents.md 
+- Guide How to Add Specialist Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeAddSpecialistAgents.md
+- Guide How to Add MCP/A2A Specialists Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeMCPA2A.md
 
 ## 🏛️ Architecture Overview
 
