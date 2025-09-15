@@ -41,7 +41,9 @@ The framework is built around two distinct and powerful agent architectures: **N
 
 - **Dynamic Credit System:** A built-in billing system that deducts credits based on the LLM model used, with configurable costs for different model tiers.
 
-- **Precision Mode:** Measure logprobs, run up to 8 paralel llm calls, measure confidence and retrieve higher values.  Based on DeepConf. 
+- **Precision Mode:** Measure logprobs, run up to 8 paralel llm calls, measure confidence and retrieve higher values.  Based on DeepConf.
+
+- **Specialist Agentse:** As for today, Aura has 2 Specialist Agents: Tensor.Art and HugginFace. Any Agent in Aura can call those. You can add more check extended documentation. 
 
 ## 🏛️ Extended Documentation 
 
@@ -50,6 +52,7 @@ The framework is built around two distinct and powerful agent architectures: **N
 - Guide to the FrontEnd : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeIndexFrontEnd.md
 - Guide to Models and Credit: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMODELS.md
 - Guide to the MemoryBlossom and Adaptive Memory: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMemory.md
+- Guide How to Add Specialist Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeAddSpecialistAgents.md 
 
 ## 🏛️ Architecture Overview
 
