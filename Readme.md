@@ -43,6 +43,16 @@ The framework is built around two distinct and powerful agent architectures: **N
 
 - **Dynamic Credit System:** A built-in billing system that deducts credits based on the LLM model used, with configurable costs for different model tiers.
 
+- **Precision Mode:** Measure logprobs, run up to 8 paralel llm calls, measure confidence and retrieve higher values.  Based on DeepConf. 
+
+## 🏛️ Extended Documentation 
+
+- Guide to the CEAF Governor Module : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeCEAF.md
+- Guide to Precision Mode in CEAF: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeDeepConf.md 
+- Guide to the FrontEnd : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeIndexFrontEnd.md
+- Guide to Models and Credit: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMODELS.md
+- Guide to the MemoryBlossom and Adaptive Memory: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMemory.md
+
 ## 🏛️ Architecture Overview
 
 The AuraCode system is built in layers to ensure modularity and scalability:
