@@ -50,12 +50,13 @@ The framework is built around two distinct and powerful agent architectures: **N
 ## 🏛️ Extended Documentation 
 
 - Guide to the CEAF Governor Module : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeCEAF.md
-- Guide to Precision Mode in CEAF: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeDeepConf.md 
+- Guide to Precision Mode(DeepConf) in CEAF: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeDeepConf.md 
 - Guide to the FrontEnd : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeIndexFrontEnd.md
 - Guide to Models and Credit: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMODELS.md
 - Guide to the MemoryBlossom and Adaptive Memory: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMemory.md
 - Guide How to Add Specialist Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeAddSpecialistAgents.md
 - Guide How to Add MCP/A2A Specialists Agents: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeMCPA2A.md
+- Guide How to Biograhical Memories: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeBiographicalMemories.md
 
 ## 🏛️ Architecture Overview
 
