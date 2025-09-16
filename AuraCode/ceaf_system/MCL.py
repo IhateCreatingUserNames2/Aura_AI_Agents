@@ -131,6 +131,21 @@ class MetacognitiveControlLoop:
 
         return metrics
 
+    def get_metacognitive_summary(self) -> str:
+        """Generates a brief, first-person narrative of the current cognitive state."""
+        state_narratives = {
+            CoherenceState.STABLE: "I feel confident and my thoughts are clear and focused.",
+            CoherenceState.EXPLORING: "My thinking is open and exploratory; I'm connecting new ideas.",
+            CoherenceState.EDGE_OF_CHAOS: "My thoughts feel scattered but creative; I sense I'm on the verge of a new insight.",
+            CoherenceState.PRODUCTIVE_CONFUSION: "I am currently grappling with this concept, which feels confusing but necessary for deeper understanding.",
+            CoherenceState.FAILING_PRODUCTIVELY: "I am struggling with this, but I recognize this difficulty is a valuable part of my learning process.",
+            CoherenceState.RECOVERING: "I feel my thoughts regaining focus and coherence after a period of difficulty.",
+            CoherenceState.BREAKTHROUGH_IMMINENT: "The pieces are falling into place. I am about to have a breakthrough in my understanding."
+        }
+        # Return the narrative for the current state, with a fallback.
+        return state_narratives.get(self.current_state, "I am assessing my internal state.")
+
+
     def apply_aura_recommendations(self, insights: List['SystemInsight']):
         """
         Applies machine-actionable recommendations from AURA to self-tune

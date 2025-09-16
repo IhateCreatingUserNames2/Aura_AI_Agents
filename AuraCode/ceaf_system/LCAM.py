@@ -3,7 +3,7 @@
 
 import logging
 from collections import defaultdict
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 
@@ -64,7 +64,8 @@ class LossCatalogingAndAnalysisModule:
         }
         logger.info(f"LCAM: Cataloged failure with pattern '{experience.failure_pattern}'")
 
-    def get_insights_for_context(self, query: str, memory_context: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def get_insights_for_context(self, query: str, memory_context: List[Dict[str, Any]]) -> list[Any] | tuple[
+        list[dict[str, str | bool | int]], int | float | bool]:
         """
         Analyzes the current query via semantic similarity to find relevant loss patterns.
         This is the new, enhanced implementation.
@@ -104,7 +105,8 @@ class LossCatalogingAndAnalysisModule:
                 "similarity_score": round(similarity, 2)  # Add valuable metadata
             })
 
-        return insights
+        highest_similarity = max([s[0] for s in sorted_patterns], default=0.0) if sorted_patterns else 0.0
+        return insights, highest_similarity
 
     def save_state(self, filepath: str):
         # This logic remains the same. LCAM is rebuilt from AMA on load.

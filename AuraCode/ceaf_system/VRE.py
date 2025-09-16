@@ -4,7 +4,7 @@
 # FIXED: Now stateful, learns the effectiveness of virtues in different contexts.
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
 import json
@@ -46,7 +46,7 @@ class VirtueReasoningEngine:
         # --- END NEW ---
         logger.info("Initialized Stateful Virtue & Reasoning Engine (VRE)")
 
-    def get_virtue_considerations(self, state: 'AgentState') -> List[str]:
+    def get_virtue_considerations(self, state: 'AgentState') -> tuple[list[Any], float]:
         """
         Analyzes the current state, generates a list of virtue-based considerations,
         and prepends any learned wisdom relevant to the current context.
@@ -115,7 +115,16 @@ class VirtueReasoningEngine:
         # --- END NEW ---
 
         # Deduplicate and return a concise list
-        return list(dict.fromkeys(considerations))
+        salience_score = 0.5  # Base salience
+        if any("[Learned Wisdom]" in c for c in considerations):
+            salience_score += 0.4
+        if any("Intellectual Courage" in c for c in considerations):
+            salience_score += 0.3
+        if any("Epistemic Humility" in c for c in considerations):
+            salience_score += 0.2
+
+        final_considerations = list(dict.fromkeys(considerations))
+        return final_considerations, min(1.0, salience_score)  # Return data and salience
 
     def _score_state_transition(self, source_state: 'CoherenceState', target_state: 'CoherenceState') -> float:
         """Assigns a score to a state transition, rewarding positive change."""

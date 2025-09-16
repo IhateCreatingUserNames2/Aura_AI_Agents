@@ -6,6 +6,8 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 import json
+
+from numpy import floating
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import DBSCAN
 from collections import defaultdict
@@ -205,7 +207,10 @@ class AdaptiveMemoryArchitecture:
                                    query: str,
                                    k: int = 5,
                                    include_failures: bool = True,
-                                   failure_weight: float = 0.3) -> List[MemoryExperience]:
+                                   failure_weight: float = 0.3) -> list[Any] | tuple[
+        list[Any], float] | tuple[
+                                                                       list[MemoryExperience | list[
+                                                                           MemoryExperience]], floating]:
         """
         Retrieve memories with integrated loss/failure context
         """
@@ -239,7 +244,18 @@ class AdaptiveMemoryArchitecture:
                 scored_experiences.append((score, exp))
 
         scored_experiences.sort(key=lambda x: x[0], reverse=True)
-        return [exp for _, exp in scored_experiences[:k]]
+        final_results = [exp for _, exp in scored_experiences[:k]]
+
+        if not final_results:
+            return [], 0.0  # Return data and salience score
+
+        # ==================== START OF FIX ====================
+        # The result of np.mean() is a numpy.float64, which is not serializable by msgpack.
+        # We must cast it to a standard Python float.
+        avg_salience = float(np.mean([score for score, exp in scored_experiences[:k]]))
+        # ===================== END OF FIX =====================
+
+        return final_results, avg_salience
 
     def _track_loss_to_insight(self, insight_experience: MemoryExperience):
         """Track connections between failures and subsequent insights"""

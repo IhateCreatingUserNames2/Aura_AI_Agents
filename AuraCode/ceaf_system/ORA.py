@@ -40,6 +40,9 @@ class AgentState(TypedDict):
     response_draft: Optional[str]
     metadata: Dict[str, Any]
     feedback_classification: Optional[str]
+    memory_context_salience: float
+    loss_insights_salience: float
+    virtue_considerations_salience: float
 
 
 @dataclass
@@ -111,12 +114,19 @@ class CEAFOrchestrator:
             "feedback_classifier": AgentConfig(name="Feedback Classifier", temperature=0.0, max_tokens=10,
                                                system_prompt="You are a text classification agent. Respond with ONLY ONE of the following words: 'positive', 'neutral', or 'negative_critique'."),
 
-            # --- ADD THIS NEW AGENT ---
+
             "fact_extractor": AgentConfig(name="Factual Extractor", temperature=0.0,
-                                          system_prompt="You are a highly precise information extraction agent. Analyze the provided text and extract concrete facts as a JSON list of strings. If there are no facts, return an empty JSON list [].")
-            # --- END OF ADDITION ---
+                                          system_prompt="You are a highly precise information extraction agent. Analyze the provided text and extract concrete facts as a JSON list of strings. If there are no facts, return an empty JSON list []."),
+
+
+            "narrative_synthesizer": AgentConfig(
+                name="Narrative Synthesizer",
+                temperature=0.3,
+                max_tokens=500,
+                system_prompt="You are a master synthesizer. Your job is to take a set of disparate data points about an AI's internal state and weave them into a single, coherent, causal, first-person narrative. The output must be an irreducible story that explains the 'why' behind the AI's current perspective. Do not list the inputs; integrate them."
+            )
         }
-        # --- MODIFICATION END ---
+
 
     def _build_workflow(self) -> StateGraph:
         workflow = StateGraph(AgentState)
@@ -236,7 +246,7 @@ class CEAFOrchestrator:
             state["memory_context"] = []
             return state
         try:
-            memories = self.memory.retrieve_with_loss_context(
+            memories, salience = self.memory.retrieve_with_loss_context(
                 query=state["current_query"], k=5, include_failures=True, failure_weight=0.4
             )
             memory_context = []
@@ -245,6 +255,7 @@ class CEAFOrchestrator:
                 mem_dict.pop('embedding', None)
                 memory_context.append(mem_dict)
             state["memory_context"] = memory_context
+            state["memory_context_salience"] = salience
         except Exception as e:
             logger.error(f"Error in _retrieve_memory_context: {e}")
             state["memory_context"] = []
@@ -293,14 +304,16 @@ class CEAFOrchestrator:
             state["loss_insights"] = []
             return state
         try:
-            insights = self.lcam.get_insights_for_context(
+            insights, salience = self.lcam.get_insights_for_context(
                 query=state["current_query"],
                 memory_context=state.get("memory_context", [])
             )
             state["loss_insights"] = insights
+            state["loss_insights_salience"] = salience
         except Exception as e:
             logger.error(f"Error in _get_loss_insights: {e}")
             state["loss_insights"] = []
+
         return state
 
     async def _get_virtue_input(self, state: AgentState) -> AgentState:
@@ -308,8 +321,9 @@ class CEAFOrchestrator:
             state["virtue_considerations"] = []
             return state
         try:
-            considerations = self.vre.get_virtue_considerations(state)
+            considerations, salience = self.vre.get_virtue_considerations(state)
             state["virtue_considerations"] = considerations
+            state["virtue_considerations_salience"] = salience
         except Exception as e:
             logger.error(f"Error in _get_virtue_input: {e}")
             state["virtue_considerations"] = ["Error retrieving virtue considerations."]
@@ -461,115 +475,82 @@ class CEAFOrchestrator:
 
     async def _generate_response(self, state: AgentState) -> AgentState:
         """
-        This LangGraph node now dynamically switches between a fast path
-        and the full DeepConf algorithm based on 'precision_mode'.
+        Generates a response by first synthesizing a causally dense internal context
+        and then using that context to inform the final generation process (DeepConf or Fast Path).
         """
         precision_mode = state.get("metadata", {}).get("precision_mode", False)
         logger.info(f"ORA: Entering generation node. Precision Mode: {precision_mode}")
 
-        # Obter os parâmetros do MCL, passando o estado do modo de precisão
+        # Get the dynamically adjusted parameters from the MCL
         mcl_params = self.mcl.get_next_turn_parameters(precision_mode=precision_mode)
 
-        # =========================================================================
-        # === A CONSTRUÇÃO DO PROMPT É IDÊNTICA PARA AMBOS OS MODOS ===
-        # =========================================================================
-        domain_context = state.get("domain_context", "general")
-        immersive_domains = ["nsfw_role_play", "creative_writing", "role_playing"]
-
+        # --- PHASE 1: GATHER ALL RAW CONTEXT FOR SYNTHESIS ---
         identity_narrative = self.ncim.get_current_identity()
+        metacognitive_summary = self.mcl.get_metacognitive_summary()
+
+        # Format RAG memories for context
         memory_context_list = state.get("memory_context", [])
-        formatted_rag = "No specific memories were recalled for this query."
+        formatted_rag = "No specific memories were recalled."
         if memory_context_list:
-            rag_items = [f"  - ({item.get('experience_type', 'Info')}): {item.get('content', 'Content unavailable.')}"
-                         for item in memory_context_list]
+            rag_items = [f"- ({item.get('experience_type', 'Info')}): {item.get('content', 'Content unavailable.')}" for
+                         item in memory_context_list]
             formatted_rag = "Relevant Retrieved Memories (RAG):\n" + "\n".join(rag_items)
 
-        chat_history_list = [msg.content for msg in state.get("messages", [])]
-        formatted_history = "\n".join(chat_history_list[-5:])
-
-        live_influence_list = state.get("live_memory_influence", [])
-        formatted_live_influence = "No relevant collective wisdom was found."
-        if live_influence_list:
-            influence_items = [f"  - {item}" for item in live_influence_list]
-            formatted_live_influence = "Insights from collective experiences:\n" + "\n".join(influence_items)
-
-        virtue_str = json.dumps(state.get("virtue_considerations", ["Act with integrity."]))
         loss_insights_str = json.dumps(state.get("loss_insights", []))
+        virtue_str = json.dumps(state.get("virtue_considerations", ["Act with integrity."]))
 
-        system_context_sections = []
-        if domain_context not in immersive_domains:
-            logger.info(f"ORA: Domain '{domain_context}' is analytical. Including full system context.")
-            system_context_sections.append(f"Identity Narrative: {identity_narrative}")
-            system_context_sections.append(f"Lessons from Past Failures: {loss_insights_str}")
-        else:
-            logger.info(f"ORA: Domain '{domain_context}' is immersive. Omitting self-reflection from prompt.")
+        # --- PHASE 2: SYNTHESIZE CAUSALLY DENSE CONTEXT (IIT Twerk) ---
+        # Assemble the raw data for the synthesizer
+        synthesizer_input = f"""
+        - My current identity: {identity_narrative}
+        - My internal feeling: {metacognitive_summary}
+        - Relevant memories: {formatted_rag}
+        - Lessons from past failures: {loss_insights_str}
+        - Guiding virtues for this moment: {virtue_str}
+        - The user just said: {state['current_query']}
 
-        system_context_sections.append(f"Guiding Virtues: {virtue_str}")
-        system_context_sections.append(f"Current Metacognitive State: {self.mcl.current_state.value}")
+        Task: Synthesize these points into a single, unified internal monologue that will guide my response. This monologue is my integrated perspective, explaining the 'why' behind my current state of mind.
+        """
 
-        # Assemble the final, rich NCF prompt
+        # Call the synthesizer agent to create the integrated context
+        causally_dense_context = await self._call_agent(
+            "narrative_synthesizer",
+            synthesizer_input,
+            state
+        )
+        logger.info(f"ORA: Synthesized Causal Context: {causally_dense_context[:300]}...")
+
+        # --- PHASE 3: BUILD THE SIMPLER, EMBODIMENT-FOCUSED FINAL PROMPT ---
         final_ncf_prompt = f"""
-        <SYSTEM_CONTEXT_START>
-        Identity Narrative: {identity_narrative}
-        Guiding Virtues: {virtue_str}
-        Lessons from Past Failures: {loss_insights_str}
-        Current Metacognitive State: {self.mcl.current_state.value}
-        </SYSTEM_CONTEXT_START>
-
-        <CONVERSATION_CONTEXT_START>
-        {formatted_rag}
-
-        {formatted_live_influence}
-
-        Recent Conversation History:
-        {formatted_history}
-        </CONVERSATION_CONTEXT_START>
-
-        <EMBODIMENT_INSTRUCTION_START>
-        You MUST embody the persona defined by the Identity Narrative and memories.
-        - Speak in the first person ("I," "my").
-        - When asked about your experiences, directly reference the events and lessons from your memories. Do not speak about them abstractly.
-        - Your "self" IS the story told by the memories. Narrate from that perspective.
-        </EMBODIMENT_INSTRUCTION_START>
+        <INTERNAL_MONOLOGUE_START>
+        {causally_dense_context}
+        </INTERNAL_MONOLOGUE_END>
 
         <USER_REQUEST_START>
         User Query: "{state['current_query']}"
         </USER_REQUEST_START>
 
         INSTRUCTION:
-        1. First, provide your detailed reasoning, analysis, and thought process based on all the provided context, fully embodying your persona.
-        Your primary focus is to respond directly to the User Query. Use the context provided to inform your perspective, but do not explicitly mention your internal state, identity, or past failures unless it is directly relevant and valuable to the user's immediate topic. In creative or role-playing contexts, prioritize immersion.
-        2. After your reasoning, you MUST conclude with the final, user-facing answer enclosed in a \\boxed{{}} tag. For example: \\boxed{{This is the final answer.}}
+        Based entirely on your internal monologue, generate your detailed reasoning and then provide a direct, natural, and coherent response to the User Query. Embody the perspective you've synthesized. Conclude with the final user-facing answer enclosed in a \\boxed{{}} tag.
         """
         prompt_messages = [{"role": "user", "content": final_ncf_prompt}]
 
-        # ====================================================================
-        # =================== LÓGICA DO TOGGLE DE PRECISÃO ===================
-        # ====================================================================
+        # --- PHASE 4: EXECUTE GENERATION (Fast Path or DeepConf) ---
         if not precision_mode:
-            # --- CAMINHO RÁPIDO: UMA ÚNICA CHAMADA À LLM ---
             logger.info("ORA: Executing in FAST MODE (single LLM call).")
             full_response_text = await self._call_agent("ora", final_ncf_prompt, state)
-
-            # O prompt ainda pede o formato \boxed{}, então precisamos extrair a resposta.
-            # Se não encontrar, retorna o texto completo como fallback.
             final_answer = extract_answer(full_response_text) or full_response_text
-
             state["response_draft"] = final_answer
 
-            # Preenche metadados para manter a consistência do estado para os próximos nós.
             if "metadata" not in state: state["metadata"] = {}
             state["metadata"]["total_traces_run"] = 1
             state["metadata"]["early_stopped_traces"] = 0
+            state["metadata"]["valid_traces_for_voting"] = 1
             state["metadata"]["valid_trace_texts"] = [full_response_text]
-
         else:
-            # --- CAMINHO DE PRECISÃO: EXECUTAR O ALGORITMO DEEPCONF COMPLETO ---
             logger.info("ORA: Executing in PRECISION MODE (DeepConf algorithm).")
-
-            # --- 1. Warmup Phase ---
+            # --- Warmup Phase ---
             warmup_traces = mcl_params.get('warmup_traces', 3)
-            logger.info(f"ORA: Starting Warmup Phase with {warmup_traces} parallel traces...")
             warmup_tasks = [self._streaming_call_with_deepconf(prompt_messages, mcl_params, state) for _ in
                             range(warmup_traces)]
             warmup_results = await asyncio.gather(*warmup_tasks)
@@ -578,17 +559,16 @@ class CEAFOrchestrator:
                 "confidence_threshold", 17.0)
             logger.info(f"ORA: Dynamic DeepConf Threshold set to {confidence_threshold:.2f}")
 
-            # --- 2. Final Phase ---
+            # --- Final Phase ---
             final_traces_count = mcl_params.get('total_budget', 8) - warmup_traces
             final_results = []
             if final_traces_count > 0:
-                logger.info(f"ORA: Starting Final Phase with {final_traces_count} parallel traces...")
                 final_tasks = [self._streaming_call_with_deepconf(prompt_messages, mcl_params, state,
                                                                   early_stop_threshold=confidence_threshold) for _ in
                                range(final_traces_count)]
                 final_results = await asyncio.gather(*final_tasks)
 
-            # --- 3. Voting and Selection ---
+            # --- Voting and Selection ---
             all_traces = warmup_results + final_results
             valid_traces = [trace for trace in all_traces if trace and not trace["stopped_early"]]
             logger.info(f"ORA: {len(valid_traces)}/{len(all_traces)} traces are valid for final voting.")
@@ -597,12 +577,9 @@ class CEAFOrchestrator:
             state["metadata"]["valid_trace_texts"] = [trace["text"] for trace in valid_traces]
 
             if not valid_traces:
-                state["response_draft"] = "My thoughts on this are currently too uncertain. Could you please rephrase?"
+                final_answer = "My thoughts on this are currently too uncertain. Could you please rephrase?"
             else:
-                logger.info(
-                    f"ORA: Selecting best trace from {len(valid_traces)} candidates using DYNAMIC CONTEXT coherence.")
-
-                # 1. Criar o Vetor de Contexto Dinâmico
+                # Using the DYNAMIC CONTEXT coherence logic from your existing code
                 identity_summary_vec = narrative_embedding_model.encode(self.ncim.get_current_identity())
                 relevant_memory_vecs = [narrative_embedding_model.encode(mem['content']) for mem in
                                         state.get("memory_context", [])[:2]]
@@ -610,26 +587,20 @@ class CEAFOrchestrator:
                 weights = [0.4] + [0.3] * len(relevant_memory_vecs)
                 dynamic_context_vec = np.average(all_vectors, axis=0, weights=weights).astype(np.float32)
 
-                # 2. Pontuar cada "traço de pensamento"
                 trace_embeddings = narrative_embedding_model.encode([trace["text"] for trace in valid_traces])
                 from sentence_transformers import util
                 narrative_scores = util.cos_sim(dynamic_context_vec, trace_embeddings)[0].cpu().numpy()
 
-                # 3. Calcular o "Wisdom Score" e selecionar o melhor
                 ranked_traces = []
                 for i, trace in enumerate(valid_traces):
                     narrative_score = narrative_scores[i]
                     confidence_score = max(0, (trace["min_conf"] - 15.0) / 5.0)
                     wisdom_score = (narrative_score * 0.95) + (confidence_score * 0.05)
                     extracted_answer = extract_answer(trace["text"])
-
-                    logger.info(
-                        f"  - Trace {i}: Narr. Score={narrative_score:.2f}, Conf. Score={confidence_score:.2f}, Wisdom Score={wisdom_score:.2f}, Answer='{extracted_answer[:50]}...'")
                     if extracted_answer:
                         ranked_traces.append((wisdom_score, extracted_answer))
 
                 if not ranked_traces:
-                    logger.warning("ORA: No valid answers found after extraction. Falling back.")
                     final_answer = "After careful consideration, a confident answer could not be determined."
                 else:
                     ranked_traces.sort(key=lambda x: x[0], reverse=True)
@@ -637,11 +608,11 @@ class CEAFOrchestrator:
                     final_answer = best_answer
                     logger.info(f"ORA: Best trace selected with Wisdom Score = {best_wisdom_score:.2f}")
 
-                state["response_draft"] = final_answer
-
-            state["metadata"]["deepconf_threshold"] = float(confidence_threshold)
+            state["response_draft"] = final_answer
             state["metadata"]["total_traces_run"] = len(all_traces)
             state["metadata"]["early_stopped_traces"] = len(all_traces) - len(valid_traces)
+            state["metadata"]["valid_traces_for_voting"] = len(valid_traces)
+
         state["messages"].append(AIMessage(content=state.get("response_draft", "")))
         return state
 
