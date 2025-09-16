@@ -168,6 +168,12 @@ The project includes several scripts in the root directory for management and te
 - `ExportCodeBaseToTXT.py`: Export all .py files into a single .txt file 
 - `check_db_agents.py`: Check if Agent exists
 
+
+## 📁 Frontend 
+
+- It has a simple HTML, CSS, JS frontend in the /frontend folder 
+- i'm also uploading a very deprecated Android APP that serves as a frontEnd , but it is very deprecated but surely can be used as a base... check https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/srcAndroidFront.zip
+
 ## 📁 Project Structure (Simplified)
 
 ```
