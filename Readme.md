@@ -50,6 +50,7 @@ The framework is built around two distinct and powerful agent architectures: **N
 ## 🏛️ Extended Documentation 
 
 - Guide to the CEAF Governor Module : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeCEAF.md
+- Guide to the NCF Governor Module: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeNCF.md
 - Guide to Precision Mode(DeepConf) in CEAF: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadMeDeepConf.md 
 - Guide to the FrontEnd : https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeIndexFrontEnd.md
 - Guide to Models and Credit: https://github.com/IhateCreatingUserNames2/Aura_AI_Agents/blob/main/ReadmeMODELS.md
