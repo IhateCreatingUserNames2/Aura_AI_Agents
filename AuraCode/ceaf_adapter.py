@@ -131,11 +131,9 @@ class CEAFAgentAdapter:
             total_input_tokens = len(f"{message} {self.config.detailed_persona}") // 4
             ceaf_response = await self.ceaf_system.process(ceaf_input)
 
-            ceaf_response_dict = await self.ceaf_system.process(ceaf_input)
-
-            # Extract response text and token usage (no changes)
-            response_text = ceaf_response_dict.get("response", "Erro ao processar a resposta.")
-            is_precision_mode = ceaf_response_dict.get("precision_mode", False)
+            # Extract response text and token usage
+            response_text = ceaf_response.get("response", "Erro ao processar a resposta.")
+            is_precision_mode = ceaf_response.get("precision_mode", False)
             if isinstance(ceaf_response, dict):
                 response_text = ceaf_response.get("response") or str(ceaf_response)
                 if "usage" in ceaf_response and isinstance(ceaf_response["usage"], dict):

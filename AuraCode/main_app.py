@@ -26,6 +26,8 @@ if not os.getenv("JWT_SECRET_KEY"):
 # Import the FastAPI app from routes
 from api.routes import app
 
+# main_app.py
+
 if __name__ == "__main__":
     host = os.getenv("API_HOST", "0.0.0.0")
     port = int(os.getenv("API_PORT", "8000"))
@@ -39,5 +41,8 @@ if __name__ == "__main__":
         host=host,
         port=port,
         reload=True,  # Enable auto-reload during development
-        log_level="info"
+        log_level="info",
+
+        timeout_keep_alive=480
+
     )
