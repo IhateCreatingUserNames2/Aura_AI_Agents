@@ -2142,10 +2142,24 @@ async function sendMessage() {
             hideTypingIndicator();
             addMessage('assistant', result.response);
 
-        } else {
+         } else {
             hideTypingIndicator();
-            const error = await response.json();
-            addMessage('system', `Error: ${error.detail || error.error || 'Failed to send message'}`);
+            // --- CORRECTED FIX: ROBUST ERROR HANDLING ---
+            // Read the response body as text ONCE.
+            const errorText = await response.text();
+            let errorMessage = `Server Error: ${response.status} ${response.statusText}.`;
+
+            try {
+                // Now, TRY to parse the text as JSON.
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.detail || errorJson.error || JSON.stringify(errorJson);
+            } catch (jsonError) {
+                // If parsing fails, it's not JSON (e.g., HTML from a 504 error).
+                // The default error message is already good in this case.
+                console.error("Server response was not valid JSON. Body:", errorText);
+            }
+            addMessage('system', `Error: ${errorMessage}`);
+            // --- END CORRECTED FIX ---
         }
     } catch (error) {
         console.error('Chat error:', error);
