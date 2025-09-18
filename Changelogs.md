@@ -1,3 +1,17 @@
+18/09/2025 - 
+
+### **Changelog: Fix errors: 
+- Duplicate LLM calls in CEAF_Adapter 
+- Increased timeout in main_app 
+- Better error handling in JS
+
+
+
+
+
+
+
+
 16/09/2025 
 
 ### **Changelog: CEAF v3.1 - "Integration & Embodiment" Update**
