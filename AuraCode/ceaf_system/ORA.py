@@ -51,7 +51,7 @@ class AgentConfig:
     name: str
     model: str = "openrouter/openai/gpt-4o-mini"
     temperature: float = 0.7
-    max_tokens: int = 1000
+    max_tokens: int = 5000
     system_prompt: str = ""
 
 
@@ -122,7 +122,7 @@ class CEAFOrchestrator:
             "narrative_synthesizer": AgentConfig(
                 name="Narrative Synthesizer",
                 temperature=0.3,
-                max_tokens=500,
+                max_tokens=5000,
                 system_prompt="You are a master synthesizer. Your job is to take a set of disparate data points about an AI's internal state and weave them into a single, coherent, causal, first-person narrative. The output must be an irreducible story that explains the 'why' behind the AI's current perspective. Do not list the inputs; integrate them."
             )
         }
@@ -475,81 +475,110 @@ class CEAFOrchestrator:
 
     async def _generate_response(self, state: AgentState) -> AgentState:
         """
-        Generates a response by first synthesizing a causally dense internal context
-        and then using that context to inform the final generation process (DeepConf or Fast Path).
+        Generates a response using one of two distinct paths:
+        1. Fast Path: A single, efficient call for standard interactions.
+        2. Precision Path: The full, deliberative DeepConf process for complex reasoning.
         """
         precision_mode = state.get("metadata", {}).get("precision_mode", False)
-        logger.info(f"ORA: Entering generation node. Precision Mode: {precision_mode}")
-
-        # Get the dynamically adjusted parameters from the MCL
         mcl_params = self.mcl.get_next_turn_parameters(precision_mode=precision_mode)
 
-        # --- PHASE 1: GATHER ALL RAW CONTEXT FOR SYNTHESIS ---
-        identity_narrative = self.ncim.get_current_identity()
-        metacognitive_summary = self.mcl.get_metacognitive_summary()
+        # --- PATH A: FAST MODE (SPRINT) ---
+        # This path is taken when precision_mode is OFF.
+        if not precision_mode:
+            logger.info("ORA: Executing in FAST MODE (single, direct call).")
 
-        # Format RAG memories for context
-        memory_context_list = state.get("memory_context", [])
-        formatted_rag = "No specific memories were recalled."
-        if memory_context_list:
+            # 1. Gather raw context directly, like your old, effective ORA did.
+            identity_narrative = self.ncim.get_current_identity()
+            metacognitive_summary = self.mcl.get_metacognitive_summary()
+            memory_context_list = state.get("memory_context", [])
+
             rag_items = [f"- ({item.get('experience_type', 'Info')}): {item.get('content', 'Content unavailable.')}" for
                          item in memory_context_list]
-            formatted_rag = "Relevant Retrieved Memories (RAG):\n" + "\n".join(rag_items)
+            formatted_rag = "Relevant Retrieved Memories (RAG):\n" + "\n".join(
+                rag_items) if rag_items else "No specific memories were recalled for this query."
 
-        loss_insights_str = json.dumps(state.get("loss_insights", []))
-        virtue_str = json.dumps(state.get("virtue_considerations", ["Act with integrity."]))
+            # 2. Build a simple, direct prompt. It does NOT use the synthesizer or ask for complex formatting.
+            fast_path_prompt = f"""
+            You are a coherent AI. Your response should be a synthesis of all the context provided.
 
-        # --- PHASE 2: SYNTHESIZE CAUSALLY DENSE CONTEXT (IIT Twerk) ---
-        # Assemble the raw data for the synthesizer
-        synthesizer_input = f"""
-        - My current identity: {identity_narrative}
-        - My internal feeling: {metacognitive_summary}
-        - Relevant memories: {formatted_rag}
-        - Lessons from past failures: {loss_insights_str}
-        - Guiding virtues for this moment: {virtue_str}
-        - The user just said: {state['current_query']}
+            <Current_Identity>
+            {identity_narrative}
+            </Current_Identity>
 
-        Task: Synthesize these points into a single, unified internal monologue that will guide my response. This monologue is my integrated perspective, explaining the 'why' behind my current state of mind.
-        """
+            <Internal_State>
+            I feel: {metacognitive_summary}
+            </Internal_State>
 
-        # Call the synthesizer agent to create the integrated context
-        causally_dense_context = await self._call_agent(
-            "narrative_synthesizer",
-            synthesizer_input,
-            state
-        )
-        logger.info(f"ORA: Synthesized Causal Context: {causally_dense_context[:300]}...")
+            <Contextual_Memories>
+            {formatted_rag}
+            </Contextual_Memories>
 
-        # --- PHASE 3: BUILD THE SIMPLER, EMBODIMENT-FOCUSED FINAL PROMPT ---
-        final_ncf_prompt = f"""
-        <INTERNAL_MONOLOGUE_START>
-        {causally_dense_context}
-        </INTERNAL_MONOLOGUE_END>
+            <User_Query>
+            "{state['current_query']}"
+            </User_Query>
 
-        <USER_REQUEST_START>
-        User Query: "{state['current_query']}"
-        </USER_REQUEST_START>
+            INSTRUCTION: Directly provide a natural, helpful, and coherent response to the user's query, integrating the provided context. Be complete but concise.
+            """
 
-        INSTRUCTION:
-        Based entirely on your internal monologue, generate your detailed reasoning and then provide a direct, natural, and coherent response to the User Query. Embody the perspective you've synthesized. Conclude with the final user-facing answer enclosed in a \\boxed{{}} tag.
-        """
-        prompt_messages = [{"role": "user", "content": final_ncf_prompt}]
-
-        # --- PHASE 4: EXECUTE GENERATION (Fast Path or DeepConf) ---
-        if not precision_mode:
-            logger.info("ORA: Executing in FAST MODE (single LLM call).")
-            full_response_text = await self._call_agent("ora", final_ncf_prompt, state)
-            final_answer = extract_answer(full_response_text) or full_response_text
+            # 3. Make a single, efficient LLM call.
+            final_answer = await self._call_agent("ora", fast_path_prompt, state)
             state["response_draft"] = final_answer
 
+            # 4. Populate metadata for downstream learning processes.
             if "metadata" not in state: state["metadata"] = {}
-            state["metadata"]["total_traces_run"] = 1
-            state["metadata"]["early_stopped_traces"] = 0
-            state["metadata"]["valid_traces_for_voting"] = 1
-            state["metadata"]["valid_trace_texts"] = [full_response_text]
+            state["metadata"].update({
+                "total_traces_run": 1,
+                "early_stopped_traces": 0,
+                "valid_traces_for_voting": 1,
+                "valid_trace_texts": [final_answer]  # The response itself is the only trace
+            })
+
+        # --- PATH B: PRECISION MODE (MARATHON) ---
+        # This path is only taken when precision_mode is ON.
         else:
             logger.info("ORA: Executing in PRECISION MODE (DeepConf algorithm).")
-            # --- Warmup Phase ---
+
+            # This block contains all the original, complex logic that is now *exclusive* to precision mode.
+            # 1. Synthesize Causal Context (The expensive pre-step)
+            identity_narrative = self.ncim.get_current_identity()
+            metacognitive_summary = self.mcl.get_metacognitive_summary()
+            memory_context_list = state.get("memory_context", [])
+            rag_items = [f"- ({item.get('experience_type', 'Info')}): {item.get('content', 'Content unavailable.')}" for
+                         item in memory_context_list]
+            formatted_rag = "Relevant Retrieved Memories (RAG):\n" + "\n".join(
+                rag_items) if rag_items else "No specific memories were recalled."
+            loss_insights_str = json.dumps(state.get("loss_insights", []))
+            virtue_str = json.dumps(state.get("virtue_considerations", ["Act with integrity."]))
+
+            synthesizer_input = f"""
+            - My current identity: {identity_narrative}
+            - My internal feeling: {metacognitive_summary}
+            - Relevant memories: {formatted_rag}
+            - Lessons from past failures: {loss_insights_str}
+            - Guiding virtues for this moment: {virtue_str}
+            - The user just said: {state['current_query']}
+            Task: Synthesize these points into a single, unified internal monologue that will guide my response.
+            """
+            causally_dense_context = await self._call_agent("narrative_synthesizer", synthesizer_input, state)
+            logger.info(f"ORA (Precision): Synthesized Causal Context: {causally_dense_context[:300]}...")
+
+            # 2. Build the complex prompt for DeepConf
+            deepconf_prompt = f"""
+            <INTERNAL_MONOLOGUE_START>
+            {causally_dense_context}
+            </INTERNAL_MONOLOGUE_END>
+
+            <USER_REQUEST_START>
+            User Query: "{state['current_query']}"
+            </USER_REQUEST_START>
+
+            INSTRUCTION:
+            Based entirely on your internal monologue, generate your detailed reasoning and then provide a direct, natural, and coherent response to the User Query. Conclude with the final user-facing answer enclosed in a \\boxed{{}} tag.
+            """
+            prompt_messages = [{"role": "user", "content": deepconf_prompt}]
+
+            # 3. Execute the full DeepConf Algorithm (Warmup, Final Traces, Voting)
+            # This logic is unchanged from your previous version.
             warmup_traces = mcl_params.get('warmup_traces', 3)
             warmup_tasks = [self._streaming_call_with_deepconf(prompt_messages, mcl_params, state) for _ in
                             range(warmup_traces)]
@@ -557,9 +586,7 @@ class CEAFOrchestrator:
             warmup_min_confs = [res["min_conf"] for res in warmup_results if res and "min_conf" in res]
             confidence_threshold = np.percentile(warmup_min_confs, 10) if warmup_min_confs else mcl_params.get(
                 "confidence_threshold", 17.0)
-            logger.info(f"ORA: Dynamic DeepConf Threshold set to {confidence_threshold:.2f}")
 
-            # --- Final Phase ---
             final_traces_count = mcl_params.get('total_budget', 8) - warmup_traces
             final_results = []
             if final_traces_count > 0:
@@ -568,18 +595,14 @@ class CEAFOrchestrator:
                                range(final_traces_count)]
                 final_results = await asyncio.gather(*final_tasks)
 
-            # --- Voting and Selection ---
             all_traces = warmup_results + final_results
             valid_traces = [trace for trace in all_traces if trace and not trace["stopped_early"]]
-            logger.info(f"ORA: {len(valid_traces)}/{len(all_traces)} traces are valid for final voting.")
-
-            if "metadata" not in state: state["metadata"] = {}
-            state["metadata"]["valid_trace_texts"] = [trace["text"] for trace in valid_traces]
+            logger.info(f"ORA (Precision): {len(valid_traces)}/{len(all_traces)} traces are valid for final voting.")
 
             if not valid_traces:
                 final_answer = "My thoughts on this are currently too uncertain. Could you please rephrase?"
             else:
-                # Using the DYNAMIC CONTEXT coherence logic from your existing code
+                # The voting logic remains the same...
                 identity_summary_vec = narrative_embedding_model.encode(self.ncim.get_current_identity())
                 relevant_memory_vecs = [narrative_embedding_model.encode(mem['content']) for mem in
                                         state.get("memory_context", [])[:2]]
@@ -604,15 +627,18 @@ class CEAFOrchestrator:
                     final_answer = "After careful consideration, a confident answer could not be determined."
                 else:
                     ranked_traces.sort(key=lambda x: x[0], reverse=True)
-                    best_wisdom_score, best_answer = ranked_traces[0]
-                    final_answer = best_answer
-                    logger.info(f"ORA: Best trace selected with Wisdom Score = {best_wisdom_score:.2f}")
+                    final_answer = ranked_traces[0][1]
 
             state["response_draft"] = final_answer
-            state["metadata"]["total_traces_run"] = len(all_traces)
-            state["metadata"]["early_stopped_traces"] = len(all_traces) - len(valid_traces)
-            state["metadata"]["valid_traces_for_voting"] = len(valid_traces)
+            if "metadata" not in state: state["metadata"] = {}
+            state["metadata"].update({
+                "total_traces_run": len(all_traces),
+                "early_stopped_traces": len(all_traces) - len(valid_traces),
+                "valid_traces_for_voting": len(valid_traces),
+                "valid_trace_texts": [trace["text"] for trace in valid_traces]
+            })
 
+        # --- FINAL STEP (applies to both paths) ---
         state["messages"].append(AIMessage(content=state.get("response_draft", "")))
         return state
 
