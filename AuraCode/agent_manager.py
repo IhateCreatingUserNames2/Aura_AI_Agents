@@ -933,7 +933,7 @@ class NCFAuraAgentInstance:
                     {"role": "user", "content": message}
                 ],
                 temperature=0.0,
-                max_tokens=15
+                max_tokens=150
             )
             intent_str = response.choices[0].message.content.strip().lower()
             intent = UserIntent(intent_str)
