@@ -203,6 +203,10 @@ AuraCode/
 └── ...
 ```
 
+## The problem with CEAF
+
+- CEAF Emergent Properties Will Only Show when the Agent has Enough Memories/Chats/interactions. 
+
 ## 🤝 Contributing
 
 Contributions are welcome! If you'd like to improve AuraCode, please follow these steps:
