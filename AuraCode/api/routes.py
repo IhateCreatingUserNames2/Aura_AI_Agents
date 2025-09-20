@@ -509,7 +509,7 @@ async def process_chat_message(
     Função comum para processar mensagens de chat com persistência opcional
     COMPATÍVEL COM NCF E CEAF
     """
-    max_input_words = 400
+    max_input_words = 8046
     if len(message.split()) > max_input_words:
         raise HTTPException(
             status_code=413,
