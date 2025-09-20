@@ -1,3 +1,10 @@
+20/09/2025 - 
+
+###  Change Log 
+- Fixed Error in ORA where DEEPCONF FastPath was Limitating CEAF. 
+-  Increased Token Input from 400 to 8k and Output from 1000 to 5k 
+
+
 18/09/2025 - 
 
 ### **Changelog: Fix errors: 
