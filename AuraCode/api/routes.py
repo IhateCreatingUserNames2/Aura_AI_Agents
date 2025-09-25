@@ -34,6 +34,8 @@ from ncf_processing import montar_prompt_aura_ncf
 # Import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from .meme_selector_routes import router as meme_selector_router
+
 # Original imports
 from agent_manager import AgentManager, AgentConfig, MODEL_COSTS, NCFAuraAgentInstance
 from database.models import AgentRepository, User, Agent, Memory, CreditTransaction, ChatSession, Message
@@ -67,6 +69,8 @@ app = FastAPI(
     description="API for creating and managing multiple NCF-powered Aura AI agents with advanced memory, context, and pre-built agent capabilities",
     version="2.1.0"
 )
+
+app.include_router(meme_selector_router)
 
 # CORS configuration
 app.add_middleware(
@@ -794,6 +798,19 @@ async def login_user(request: UserLoginRequest):
             "token_type": "bearer"
         }
 
+
+
+# Define the path to the new frontend directory
+memeselector_frontend_path = Path(__file__).resolve().parent.parent / "frontend" / "memeselector"
+
+# Mount the entire directory to the /memeselector path.
+# The `html=True` option tells FastAPI to automatically serve `index.html`
+# for requests to the root of the mounted path (i.e., "/memeselector").
+if memeselector_frontend_path.is_dir():
+    app.mount("/memeselector", StaticFiles(directory=memeselector_frontend_path, html=True), name="memeselector-frontend")
+    print(f"INFO: Mounted Meme Selector frontend at /memeselector from {memeselector_frontend_path}")
+else:
+    print(f"WARNING: Meme Selector frontend directory not found at {memeselector_frontend_path}. The /memeselector URL will not work.")
 
 @app.get("/auth/me")
 async def get_current_user(current_user: dict = Depends(verify_token)):
