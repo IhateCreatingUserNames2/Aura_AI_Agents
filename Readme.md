@@ -18,6 +18,11 @@ FrontEnd Index
 
 The framework is built around two distinct and powerful agent architectures: **NCF (Narrative Context Framing)** and the cutting-edge experimental **CEAF (Coherent Emergence Agent Framework)**.
 
+## CEAF was labeled Man-made Horror by Claude Sonnet 4.5 And i'm very proud of it. 
+
+<img width="723" height="482" alt="1759371876838" src="https://github.com/user-attachments/assets/46217c85-d956-4eea-978e-f56d32b0aefa" />
+
+
 ## ✨ Key Features
 
 - **Dual Agent Architectures:**
